@@ -632,6 +632,7 @@ created = 29-05-2026
 status = active 
 
 
+
 ====================
 
 --- show above server data as xml , yaml and json format 
@@ -844,10 +845,245 @@ History:
 
 -
 ====================================================
+DATE : 2 JUNE 2026
+
+
+
+=====================================================================
+
+To create a deployment using imperative command, use kubectl create:
+
+kubectl create deployment nginx --image=nginx
+
+kubectl create deployment instadeploy --image=<image> --replicas=3 --dry-run -o yaml
+--------------------------------------------------------
+
+
+cat 1-deploy_AC_V1.yaml
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fb-deployment
+  labels:
+    app: fb-app
+    env: prod
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: fb-app
+      env: prod
+  template:
+    metadata:
+      labels:
+        app: fb-app
+        env: prod
+        version: v1_ac 
+    spec:
+      containers:
+      - name: facebook-container
+        image: jenkins/jenkins:lts
+        ports:
+        - containerPort: 8080
+      
+====================
+kubectl apply -f 02-DEPLOYMNET-PRACTICE/1-deploy_AC_V1.yaml
+
+==================================================================
+
+cat 2-deploy_VC_v2.yaml
+---
+
+
+
+---
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: fb-deployment
+  labels:
+    app: fb-app
+    env: prod
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  
+  selector:
+    matchLabels:
+      app: fb-app
+      env: prod
+  template:
+    metadata: 
+      labels:
+        app: fb-app
+        env: prod
+        version: v2_vc
+
+    spec:
+      containers: 
+      - name: facebook-container
+        image: devopshubg333/batch17d:pythonimg_v1
+        ports:
+        - containerPort: 8080
+      
+==============
+kubectl apply -f 02-DEPLOYMNET-PRACTICE/1-deploy_AC_V1.yaml
+kubectl apply -f 02-DEPLOYMNET-PRACTICE/2-deploy_VC_v2.yaml
+
+ kubectl get deployment
+
+------------
+
+ kubectl rollout pause deploy fb-deploy
+ kubectl rollout resume deploy fb-deploy
+ kubectl rollout undo deploy fbdeploy
+
+
+
+====
+ cd 2june2026/
+  517  ll
+  518  cat 1-rs.yaml
+  519  kubectl apply -f 1-rs.yaml
+  520  kubectl get all
+  521  kubectl delete rs fb-replicaset
+  522  ll
+  523  kubectl apply -f 2-fb-deploy_V1.yaml
+  524  kubectl get deploy
+  525  kubectl get all
+  526  kubectl delete  deploy fb-deploy
+  527  kubectl delete  deploy fb-deployment
+  528  kubectl apply -f 2-fb-deploy_V1.yaml
+  529  kubectl get all
+  530  kubectl describe deploy fb-deployment
+  531  ll
+  532  kubectl apply -f 3-fb-deploy_V2.yaml
+  533  kubectl get all
+  534  kubectl get all
+  535  kubectl rollout pause deploy fb-deployment
+  536  kubectl rollout resume deploy fb-deployment
+  537  kubectl get po --watch
+  538  kubectl get all
+  539  kubectl describe deploy fb-deployment
+  540  kubectl describe deploy fb-deployment
+  541  kubectl describe deploy fb-deployment
+  542  kubectl get all
+  543  kubectl get po
+  544  kubectl get po -o wide
+  545  kubectl delete po fb-deployment-58b564c465-fkxpn
+  546  kubectl get po -o wide
+  547  kubectl get po --show-labels
+  548  kubectl delete po fb-deployment-58b564c465-w824b
+  549  kubectl get po --show-labels
+  550  ll
+  551  kubectl apply -f 4-lb-svc.yaml
+  552  kubectl get all
+  553  kubectl get all
+  554  kubectl describe deploy fb-deployment
+  555  kubectl apply -f 3-fb-deploy_V2.yaml
+  556  kubectl get all
+  557  kubectl rollout undo deploy fb-deployment
+  558  kubectl get all
+  559  kubectl apply -f 3-fb-deploy_V2.yaml
+  560  kubectl delete deploy /fb-deployment
+  561  kubectl delete deploy fb-deployment
+  562  kubectl get all
+  563  kubectl get all
+  564  kubectl apply -f 2-fb-deploy_V1.yaml
+  565  kubectl get all
+  566  kubectl apply -f 3-fb-deploy_V2.yaml
+  567  kubectl get po --watch
+  568  hisroty
+
+==================================================================
+
+DATE: 3 JUNE 2026
+
+In Kubernetes, Service types are abstractions that define how to expose Pods. The common types are:
+
+      ClusterIP (default)
+      
+      NodePort
+      
+      LoadBalancer
+
+-------------------------------------------
+
+flow :
+
+                   Client (Internet)
+                      ↓
+                   External Load Balancer
+                      ↓
+                   NodePort (on a Kubernetes Node)
+                      ↓
+                   ClusterIP (Kubernetes internal)
+                      ↓
+                   Pod (endpoint)
+
+
+----------------------------------------------
 
 
 
 
+NameSpaces :
 
+Namespaces are Kubernetes objects which partition a single Kubernetes cluster into multiple virtual clusters
 
+which means that using the combination of an object name and a Namespace, each object gets an unique identity across the cluster.
+------------
 
+A namespace in Kubernetes is a way to divide your cluster into smaller, isolated spaces for better organization and management.
+------------
+
+When you have a big Kubernetes cluster that runs many applications, you don’t want everything mixed together.
+So, you create namespaces to separate and organize things.
+
+Example:
+
+Imagine you have one big Kubernetes cluster for your company.
+
+You can make:
+
+     dev namespace → for developers to test things     
+     staging namespace → for testing before release     
+     prod namespace → for real users
+     
+Each namespace can have its own:
+
+       Pods (containers)       
+       Services       
+       Configurations       
+       Resource limits (CPU, memory, etc.)
+
+And Kubernetes makes sure that things in one namespace don’t clash with another — for example, you can have a web service in both dev and prod, and they won’t conflict.
+
+--------------------------------------------------------
+
+kubectl get pod -o wide
+kubectl get pod -o wide --all-namespaces
+
+=================================
+
+kubectl get ns
+
+kubectl create ns kirannamespace
+
+kubectl apply  -f pod.yaml -n kirannamespace
+
+kubectl get pods --all-namespaces
+
+=========================================
